@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Global Demography – Mini Quiz</title>
+  <style>
+    :root{
+      --bg: #0f172a;        /* slate-900 */
+      --card: #111827;      /* gray-900 */
+      --accent: #22d3ee;    /* cyan-400 */
+      --accent-2: #34d399;  /* emerald-400 */
+      --text: #e5e7eb;      /* gray-200 */
+      --muted: #94a3b8;     /* slate-400 */
+      --wrong: #ef4444;     /* red-500 */
+      --right: #10b981;     /* emerald-500 */
+      --shadow: 0 15px 40px rgba(2, 6, 23, 0.5);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% -10%, rgba(34,211,238,.08), transparent),
+                  radial-gradient(1200px 800px at 110% 10%, rgba(52,211,153,.08), transparent),
+                  var(--bg);
+      color: var(--text);
+      min-height:100vh; display:grid; place-items:center; padding:24px;
+    }
+    .app{
+      width:min(900px, 100%);
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: var(--shadow);
+      border-radius:24px; padding:28px; backdrop-filter: blur(8px);
+    }
+    header{display:flex; align-items:center; gap:14px; margin-bottom:18px}
+    header .tag{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+    h1{margin:.1em 0 .4em; font-weight:800; font-size:clamp(1.4rem, 2vw + 1rem, 2.2rem)}
+
+    .progress{height:10px; background:#0b1220; border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .35s ease}
+
+    .question{font-size:1.1rem; line-height:1.5; margin:20px 0 12px}
+
+    .options{display:grid; gap:12px; margin:14px 0}
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,.14); background:#0b1220; color:var(--text);
+      padding:16px 18px; border-radius:14px; font-size:1rem; cursor:pointer; text-align:left;
+      transition: transform .05s ease, border-color .2s ease, background .2s ease;
+    }
+    .btn:hover{border-color:rgba(255,255,255,.32)}
+    .btn:active{transform:translateY(1px)}
+
+    .btn.correct{background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.6)}
+    .btn.wrong{background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.6)}
+
+    .footer{display:flex; justify-content:space-between; align-items:center; margin-top:18px}
+    .pill{font-size:.95rem; color:var(--muted)}
+    .primary{background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#002b2b; border:none; padding:12px 16px; border-radius:12px; font-weight:700; cursor:pointer}
+
+    .start, .result{display:grid; gap:16px; text-align:center}
+    .start button{justify-self:center}
+
+    .small{font-size:.9rem; color:var(--muted)}
+    .answer-exp{margin-top:10px; color:var(--muted); font-size:.95rem}
+    .hide{display:none}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="card">
+      <header>
+        <div>
+          <div class="tag">Global Demography</div>
+          <h1>Mini Quiz: 3 Questions</h1>
+        </div>
+      </header>
+
+      <div id="screen-start" class="start">
+        <p class="small">Test your knowledge of world population basics. You’ll get instant feedback and a score at the end.</p>
+        <button id="btn-start" class="primary">Start Quiz</button>
+        <p class="small">Questions are based on your provided items. 👍</p>
+      </div>
+
+      <div id="screen-quiz" class="hide">
+        <div class="progress" aria-hidden="true"><div class="bar" id="progressBar"></div></div>
+        <div class="pill" id="status">Question 1 of 3</div>
+        <div class="question" id="questionText"></div>
+        <div class="options" id="options"></div>
+        <div class="answer-exp" id="explanation"></div>
+        <div class="footer">
+          <div class="pill" id="scorePreview">Score: 0</div>
+          <button id="nextBtn" class="primary" disabled>Next</button>
+        </div>
+      </div>
+
+      <div id="screen-result" class="result hide">
+        <h2>Your Score</h2>
+        <div id="finalScore" style="font-size:2rem; font-weight:800"></div>
+        <p class="small" id="remark"></p>
+        <button id="retryBtn" class="primary">Play Again</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const QUESTIONS = [
+      {
+        type: 'mcq',
+        q: 'Which continent has the largest share of the world\'s population?',
+        options: ['Africa', 'Asia', 'Europe', 'South America'],
+        answerIndex: 1,
+        explanation: 'Asia hosts about 60% of the world\'s population.'
+      },
+      {
+        type: 'mcq',
+        q: 'As of 2025, what is the estimated total population of the world?',
+        options: ['6 billion', '7 billion', '8 billion', '10 billion'],
+        answerIndex: 2,
+        explanation: 'The world passed 8 billion in 2022 and remains above 8 billion in 2025.'
+      },
+      {
+        type: 'tf',
+        q: 'True or False: More than half of the world\'s population now lives in cities.',
+        options: ['True', 'False'],
+        answerIndex: 0,
+        explanation: 'Over 50% of people live in urban areas (and rising).'
+      }
+    ];
+
+    // Simple shuffle to randomize question order (optional)
+    function shuffle(arr){
+      const a = [...arr];
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    const startScreen = document.getElementById('screen-start');
+    const quizScreen = document.getElementById('screen-quiz');
+    const resultScreen = document.getElementById('screen-result');
+    const btnStart = document.getElementById('btn-start');
+    const nextBtn = document.getElementById('nextBtn');
+    const retryBtn = document.getElementById('retryBtn');
+
+    const questionText = document.getElementById('questionText');
+    const optionsEl = document.getElementById('options');
+    const explanationEl = document.getElementById('explanation');
+    const statusEl = document.getElementById('status');
+    const progressBar = document.getElementById('progressBar');
+    const scorePrev = document.getElementById('scorePreview');
+    const finalScore = document.getElementById('finalScore');
+    const remark = document.getElementById('remark');
+
+    let pool = [];
+    let index = 0;
+    let score = 0;
+    let locked = false;
+
+    function start(){
+      pool = shuffle(QUESTIONS);
+      index = 0; score = 0; locked = false;
+      scorePrev.textContent = `Score: ${score}`;
+      startScreen.classList.add('hide');
+      resultScreen.classList.add('hide');
+      quizScreen.classList.remove('hide');
+      load();
+    }
+
+    function load(){
+      locked = false;
+      nextBtn.disabled = true;
+      explanationEl.textContent = '';
+      optionsEl.innerHTML = '';
+      const q = pool[index];
+      statusEl.textContent = `Question ${index+1} of ${pool.length}`;
+      progressBar.style.width = `${((index)/pool.length)*100}%`;
+      questionText.textContent = q.q;
+
+      q.options.forEach((opt, i)=>{
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerHTML = `<strong>${String.fromCharCode(65+i)}.</strong> ${opt}`;
+        btn.addEventListener('click', ()=> select(i));
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function select(choice){
+      if(locked) return; locked = true;
+      const q = pool[index];
+      const buttons = [...optionsEl.querySelectorAll('button')];
+      buttons.forEach((b, i)=>{
+        if(i === q.answerIndex){ b.classList.add('correct'); }
+        if(i === choice && i !== q.answerIndex){ b.classList.add('wrong'); }
+        b.disabled = true;
+      });
+      if(choice === q.answerIndex){ score++; }
+      scorePrev.textContent = `Score: ${score}`;
+      explanationEl.textContent = q.explanation;
+      nextBtn.disabled = false;
+    }
+
+    function next(){
+      if(index < pool.length-1){
+        index++;
+        load();
+      } else {
+        finish();
+      }
+    }
+
+    function finish(){
+      quizScreen.classList.add('hide');
+      resultScreen.classList.remove('hide');
+      progressBar.style.width = '100%';
+      finalScore.textContent = `${score} / ${pool.length}`;
+      const pct = Math.round((score/pool.length)*100);
+      remark.textContent = pct === 100 ? 'Perfect! 🎉' : pct >= 67 ? 'Great job! Keep it up.' : 'Good try! Review and play again.';
+    }
+
+    btnStart.addEventListener('click', start);
+    nextBtn.addEventListener('click', next);
+    retryBtn.addEventListener('click', start);
+  </script>
+</body>
+</html>
